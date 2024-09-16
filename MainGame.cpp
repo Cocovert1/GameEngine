@@ -1,5 +1,6 @@
 #include "MainGame.h"
 #include <Bengine/Errors.h>
+#include <Bengine/ResourceManager.h>
 
 #include <iostream>
 #include <string>
@@ -12,13 +13,6 @@ MainGame::~MainGame() {}
 
 void MainGame::run() {
 	initSystems();
-
-	//initialize our sprite
-	_sprites.push_back(new Bengine::Sprite());
-	_sprites.back()->init(0.0f, 0.0f, _screenWidth/2, _screenWidth / 2, "Textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
-
-	_sprites.push_back(new Bengine::Sprite());
-	_sprites.back()->init(_screenWidth / 2, 0.0f, _screenWidth / 2, _screenWidth / 2, "Textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
 
 	//main game loop
 	gameLoop();
@@ -33,6 +27,8 @@ void MainGame::initSystems() {
 	_window.create("Game Engine", _screenWidth, _screenHeight, 0);
 
 	initShaders();
+
+	_spriteBatch.init();
 }
 
 void MainGame::initShaders() {
@@ -146,10 +142,19 @@ void MainGame::drawGame() {
 	//upload matrix to GPU
 	glUniformMatrix4fv(pLocation, 1, GL_FALSE, &(cameraMatrix[0][0]));
 
-	// draw our sprites
-	for (int i = 0; i < _sprites.size(); i++) {
-		_sprites[i]->draw();
-	}
+	_spriteBatch.begin();
+
+	glm::vec4 pos(0.0f, 0.0f, 50.0f, 50.0f);
+	glm::vec4 uv(0.0f, 0.0f, 1.0f, 1.0f);
+	static Bengine::GLTexture texture = Bengine::ResourceManager::getTexture("Textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
+	Bengine::Color color;
+	color.r = 255;
+	color.g = 255;
+	color.b = 255;
+	color.a = 255;
+	_spriteBatch.draw(pos, uv, texture.id, 0.0f, color);
+	_spriteBatch.end();
+	_spriteBatch.renderBatch();
 
 	//unbind texture
 	glBindTexture(GL_TEXTURE_2D, 0);

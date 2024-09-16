@@ -9,6 +9,8 @@
 #include <Bengine/Bengine.h>
 #include <Bengine/Camera2D.h>
 
+#include <Bengine/SpriteBatch.h>
+
 #include <vector>
 
 enum class GameState {PLAY, EXIT};
@@ -43,10 +45,12 @@ private:
 	*	An array is not the most optimal data structure for texture cacheing, since it would run on O(n).
 	*	A Binary Search Tree is a much better data structure for our purposes, since it's lookup time would be O(log n)
 	*	in C++ this is known as a map	*/
-	std::vector <Bengine::Sprite*> _sprites;
+	//std::vector <Bengine::Sprite*> _sprites; //Deprecated
 
 	Bengine::GLSLProgram _colorProgram;
 	Bengine::Camera2D _camera;
+
+	Bengine::SpriteBatch _spriteBatch;
 
 	float _fps;
 	float _frameTime;
