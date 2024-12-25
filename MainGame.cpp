@@ -5,6 +5,9 @@
 #include <iostream>
 #include <string>
 
+#include <unordered_map>
+#include <functional>
+
 MainGame::MainGame() : _screenWidth(1024), _screenHeight(768), _time(0.0f), _gameState(GameState::PLAY), _maxfps(60.0f){
 	_camera.init(_screenWidth, _screenHeight);
 }
@@ -29,6 +32,7 @@ void MainGame::initSystems() {
 	initShaders();
 
 	_spriteBatch.init();
+	_fpsLimiter.init(_maxfps);
 }
 
 void MainGame::initShaders() {
@@ -42,8 +46,7 @@ void MainGame::initShaders() {
 void MainGame::gameLoop() {
 
 	while (_gameState != GameState::EXIT) {
-		//used for frame time measuring for max fps
-		float startTicks = SDL_GetTicks();
+		_fpsLimiter.begin();
 
 		processInput();
 		//increment the uniform variable time
@@ -52,7 +55,8 @@ void MainGame::gameLoop() {
 		_camera.update();
 
 		drawGame();
-		calculateFPS();
+
+		_fps = _fpsLimiter.end();
 
 		//print every 10 frames
 		static int frameCounter = 0;
@@ -61,20 +65,14 @@ void MainGame::gameLoop() {
 			std::cout << _fps << std::endl;
 			frameCounter = 0;
 		}
-
-		float frameTicks = SDL_GetTicks() - startTicks;
-
-		//FPS limit
-		if (1000.0f / _maxfps > frameTicks) {
-			SDL_Delay((1000.0f / _maxfps) - frameTicks); //our fps is lower than desired, we want to delay by  the missing ms
-		}
 	}
 }
+
 void MainGame::processInput() {
 	// an SDL event object is any input, it can be a quit button, key up or down, etc...
 	SDL_Event evnt;
 
-	const float CAMERA_SPEED = 20.0f;
+	const float CAMERA_SPEED = 2.0f;
 	const float SCALE_SPEED = 0.1f;
 
 	// polling, systems requests every few ms if there is any input
@@ -90,29 +88,32 @@ void MainGame::processInput() {
 			break;
 		
 		case SDL_KEYDOWN:
-			switch (evnt.key.keysym.sym) {
-				case SDLK_w:
-					_camera.setPosition(_camera.getPosition() + glm::vec2(0.0f, CAMERA_SPEED));
-					break;
-				case SDLK_s:
-					_camera.setPosition(_camera.getPosition() + glm::vec2(0.0f, -CAMERA_SPEED));
-					break;
-				case SDLK_a:
-					_camera.setPosition(_camera.getPosition() + glm::vec2(-CAMERA_SPEED, 0.0f));
-					break;
-				case SDLK_d:
-					_camera.setPosition(_camera.getPosition() + glm::vec2(CAMERA_SPEED, 0.0f));
-					break;
-				case SDLK_q:
-					_camera.setScale(_camera.getScale() + SCALE_SPEED);
-					break;
-				case SDLK_e:
-					_camera.setScale(_camera.getScale() - SCALE_SPEED);
-					break;
-			}
+			_inputManager.pressKey(evnt.key.keysym.sym);
+			break;
+
+		case SDL_KEYUP:
+			_inputManager.releaseKey(evnt.key.keysym.sym);
 			break;
 		}
 	}
+
+	//logically easier to follow, a pair of key and its function
+	std::unordered_map<SDL_Keycode, std::function<void()>> keyActions = {
+		{SDLK_w, [&]() { _camera.setPosition(_camera.getPosition() + glm::vec2(0.0f, CAMERA_SPEED)); }},
+		{SDLK_s, [&]() { _camera.setPosition(_camera.getPosition() + glm::vec2(0.0f, -CAMERA_SPEED)); }},
+		{SDLK_a, [&]() { _camera.setPosition(_camera.getPosition() + glm::vec2(-CAMERA_SPEED, 0.0f)); }},
+		{SDLK_d, [&]() { _camera.setPosition(_camera.getPosition() + glm::vec2(CAMERA_SPEED, 0.0f)); }},
+		{SDLK_q, [&]() { _camera.setScale(_camera.getScale() + SCALE_SPEED); }},
+		{SDLK_e, [&]() { _camera.setScale(_camera.getScale() - SCALE_SPEED); }},
+	};
+
+	//iterate the hash map until the end, if key match, run its value function
+	for (auto it = keyActions.begin(); it != keyActions.end(); ++it) {
+		if (_inputManager.isKeyPressed(it->first)) {
+			it->second(); 
+		}
+	}
+
 }
 
 void MainGame::drawGame() {
@@ -167,54 +168,6 @@ void MainGame::drawGame() {
 
 }
 
-void MainGame::calculateFPS() {
-	/*
-		To calculate our fps, we want to get the ticks for each frame. The result will be ms/frame
-		We convert it to frame/s, but that not enough. The f/s of each frame can vary drastically and 
-		it can be too sporadic. So we want to average out a number of frames and output that. 
-	*/
 
-	//nbr of frames we average
-	static const int NUM_SAMPLES = 10;
-	static float frameTimes[NUM_SAMPLES]; //can only create a static array with a const value for its size
-	static int currentFrame = 0;
 
-	//this is start time and end time
-	static float prevTicks = SDL_GetTicks();
-	float currentTicks;
-	currentTicks = SDL_GetTicks();
-
-	_frameTime = currentTicks - prevTicks;
-	frameTimes[currentFrame % NUM_SAMPLES] = _frameTime; //we are treating the array like a circular array/circular buffer
-
-	//update end time to be new start time
-	prevTicks = currentTicks;
-
-	//move onto next frame
-	currentFrame++;
-
-	//we cannot do the average only dividing by NUM_SAMPLES as the first few frames don't count to 10
-	//here we check if it is full using count
-	int count;
-	if (currentFrame < NUM_SAMPLES) {
-		count = currentFrame;
-	}
-	else {
-		count = NUM_SAMPLES;
-	}
-
-	//we divide by count here since we want the average of the number of frames in the array
-	float frameTimeAverage = 0;
-	for (int i = 0; i < count; i++) {
-		frameTimeAverage += frameTimes[i];
-	}
-	frameTimeAverage /= count;
-
-	//set the fps
-	if (frameTimeAverage > 0) {
-		_fps = 1000.0f / frameTimeAverage;
-	} else {
-		_fps = 60.0f;
-	}
-}
 

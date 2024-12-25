@@ -8,6 +8,8 @@
 #include <Bengine/Window.h>
 #include <Bengine/Bengine.h>
 #include <Bengine/Camera2D.h>
+#include <Bengine/InputManager.h>
+#include <Bengine/Timing.h>
 
 #include <Bengine/SpriteBatch.h>
 
@@ -52,9 +54,11 @@ private:
 
 	Bengine::SpriteBatch _spriteBatch;
 
-	float _fps;
-	float _frameTime;
+	Bengine::InputManager _inputManager;
+	Bengine::FpsLimiter _fpsLimiter;
+
 	float _maxfps;
+	float _fps;
 
 	float _time;
 };
