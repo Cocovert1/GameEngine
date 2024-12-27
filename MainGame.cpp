@@ -1,6 +1,6 @@
 #include "MainGame.h"
-#include <Bengine/Errors.h>
-#include <Bengine/ResourceManager.h>
+#include <GLEngine/Errors.h>
+#include <GLEngine/ResourceManager.h>
 
 #include <iostream>
 #include <string>
@@ -24,7 +24,7 @@ void MainGame::run() {
 // setup our window and opengl
 void MainGame::initSystems() {
 
-	Bengine::init();
+	GLEngine::init();
 
 	//create the window
 	_window.create("Game Engine", _screenWidth, _screenHeight, 0);
@@ -147,8 +147,8 @@ void MainGame::drawGame() {
 
 	glm::vec4 pos(0.0f, 0.0f, 50.0f, 50.0f);
 	glm::vec4 uv(0.0f, 0.0f, 1.0f, 1.0f);
-	static Bengine::GLTexture texture = Bengine::ResourceManager::getTexture("Textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
-	Bengine::Color color;
+	static GLEngine::GLTexture texture = GLEngine::ResourceManager::getTexture("Textures/jimmyJump_pack/PNG/CharacterRight_Standing.png");
+	GLEngine::Color color;
 	color.r = 255;
 	color.g = 255;
 	color.b = 255;

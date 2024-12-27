@@ -2,16 +2,16 @@
 #include <SDL/SDL.h>
 #include <GL/glew.h>
 
-#include <Bengine/Sprite.h>
-#include <Bengine/GLSLProgram.h>
-#include <Bengine/GLTexture.h>
-#include <Bengine/Window.h>
-#include <Bengine/Bengine.h>
-#include <Bengine/Camera2D.h>
-#include <Bengine/InputManager.h>
-#include <Bengine/Timing.h>
+#include <GLEngine/Sprite.h>
+#include <GLEngine/GLSLProgram.h>
+#include <GLEngine/GLTexture.h>
+#include <GLEngine/Window.h>
+#include <GLEngine/GLEngine.h>
+#include <GLEngine/Camera2D.h>
+#include <GLEngine/InputManager.h>
+#include <GLEngine/Timing.h>
 
-#include <Bengine/SpriteBatch.h>
+#include <GLEngine/SpriteBatch.h>
 
 #include <vector>
 
@@ -33,7 +33,7 @@ private:
 	void drawGame();
 	void calculateFPS();
 
-	Bengine::Window _window;
+	GLEngine::Window _window;
 	int _screenWidth;
 	int _screenHeight;
 	GameState _gameState;
@@ -47,15 +47,15 @@ private:
 	*	An array is not the most optimal data structure for texture cacheing, since it would run on O(n).
 	*	A Binary Search Tree is a much better data structure for our purposes, since it's lookup time would be O(log n)
 	*	in C++ this is known as a map	*/
-	//std::vector <Bengine::Sprite*> _sprites; //Deprecated
+	//std::vector <GLEngine::Sprite*> _sprites; //Deprecated
 
-	Bengine::GLSLProgram _colorProgram;
-	Bengine::Camera2D _camera;
+	GLEngine::GLSLProgram _colorProgram;
+	GLEngine::Camera2D _camera;
 
-	Bengine::SpriteBatch _spriteBatch;
+	GLEngine::SpriteBatch _spriteBatch;
 
-	Bengine::InputManager _inputManager;
-	Bengine::FpsLimiter _fpsLimiter;
+	GLEngine::InputManager _inputManager;
+	GLEngine::FpsLimiter _fpsLimiter;
 
 	float _maxfps;
 	float _fps;
