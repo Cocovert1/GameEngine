@@ -53,6 +53,17 @@ namespace GLEngine {
 		// sets VSYNC on/off
 		SDL_GL_SetSwapInterval(0);
 
+		//enable alpha blending
+		glEnable(GL_BLEND);
+
+		/*Img has an alpha value (opacity). GL_SRC_ALPHA will take the alpha value of each pixel in the img. So if it is a blank pixel it will be 0, else it will be 1
+		because we are drawing something on top. ONE_MINUS_SRC_ALPHA basically does the 1-img alpha. So whenever we have a pixel that we need to draw it will be 1-1 and
+		when we don't want to draw anything (no background img)s 1-0. */
+		
+		//GL is trying to figure out if we wanna draw the sprite or if we want to draw the backgroudn img, in our case the blue background. So its asking us to do this math logic
+		//so that it can determine how much of the "blue background" it will draw. Since we are using this simple 2D sprite, the alpha values are either 1 or 0.
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 		return 0;
 	}
 

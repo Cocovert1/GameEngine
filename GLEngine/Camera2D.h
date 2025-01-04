@@ -16,6 +16,8 @@ namespace GLEngine {
 
 		void update();
 
+		glm::vec2 convertScreenCoordsToWorldCoords(glm::vec2 screenCoords);
+
 		//setter and getter
 		void setPosition(const glm::vec2& newPosition) { _position = newPosition; _needsMatrixUpdate = true; }
 		glm::vec2 getPosition() { return _position; }

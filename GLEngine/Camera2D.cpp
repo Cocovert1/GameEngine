@@ -31,4 +31,16 @@ namespace GLEngine {
 		}
 
 	}
+	glm::vec2 Camera2D::convertScreenCoordsToWorldCoords(glm::vec2 screenCoords)
+	{ 
+		/* for scalability and simplicity, we want to convert how we measure our coordinates.Up until now, the top left is 0, 0 and bottom right is the screen width,height
+		This isn't ideal, we would much rather preffer if the center of the screen were 0,0 just like a normal x,y graph. Then the top left would be -sw/2 and -sh/2 and bottom
+		right would be sw/2 and sh/2. */
+		
+		screenCoords -= glm::vec2(_screenWidth / 2, _screenHeight / 2);
+		screenCoords /= _scale;
+		screenCoords += _position; //account for camera position
+		
+		return screenCoords;
+	}
 }

@@ -10,8 +10,6 @@ in vec2 fragmentUV;
 //for each pixel
 out vec4 color;
 
-//A uniform variable is a constant variable across mesh and texture
-uniform float time;
 //textures are called sampler
 uniform sampler2D mySampler;
 
@@ -20,10 +18,6 @@ void main(){
 	//U and V coordinates map a texture to a geometry. Like the 
 	//x and y axis of a texture
 	vec4 textureColor = texture(mySampler, fragmentUV);
-
 	
-	color = vec4(fragmentColor.r * ((cos(fragmentPosition.x * 4 + time)) + 1.0) * 0.5, 
-				fragmentColor.g * ((cos(fragmentPosition.y * 2 + time)) + 1.0) * 0.5,
-				fragmentColor.b * ((cos(fragmentPosition.x * 8 + time)) + 1.0) * 0.5,
-				fragmentColor.a) * textureColor;
+	color = fragmentColor * textureColor;
 }

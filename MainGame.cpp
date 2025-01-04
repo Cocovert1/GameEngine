@@ -61,7 +61,7 @@ void MainGame::gameLoop() {
 		//print every 10 frames
 		static int frameCounter = 0;
 		frameCounter++;
-		if (frameCounter == 10) {
+		if (frameCounter == 10000) {
 			std::cout << _fps << std::endl;
 			frameCounter = 0;
 		}
@@ -78,15 +78,15 @@ void MainGame::processInput() {
 	// polling, systems requests every few ms if there is any input
 	while (SDL_PollEvent(&evnt)) {
 		switch (evnt.type) {
-		//if quit event, stop game
+			//if quit event, stop game
 		case SDL_QUIT:
 			_gameState = GameState::EXIT;
 			break;
 
 		case SDL_MOUSEMOTION:
-			//std::cout << evnt.motion.x << " " << evnt.motion.y << std::endl;
+			_inputManager.setMouseCoords(evnt.motion.x, evnt.motion.y);
 			break;
-		
+
 		case SDL_KEYDOWN:
 			_inputManager.pressKey(evnt.key.keysym.sym);
 			break;
@@ -94,26 +94,41 @@ void MainGame::processInput() {
 		case SDL_KEYUP:
 			_inputManager.releaseKey(evnt.key.keysym.sym);
 			break;
+
+		case SDL_MOUSEBUTTONDOWN:
+			_inputManager.pressKey(evnt.button.button);
+			break;
+
+		case SDL_MOUSEBUTTONUP:
+			_inputManager.releaseKey(evnt.button.button);
+			break;
 		}
-	}
 
-	//logically easier to follow, a pair of key and its function
-	std::unordered_map<SDL_Keycode, std::function<void()>> keyActions = {
-		{SDLK_w, [&]() { _camera.setPosition(_camera.getPosition() + glm::vec2(0.0f, CAMERA_SPEED)); }},
-		{SDLK_s, [&]() { _camera.setPosition(_camera.getPosition() + glm::vec2(0.0f, -CAMERA_SPEED)); }},
-		{SDLK_a, [&]() { _camera.setPosition(_camera.getPosition() + glm::vec2(-CAMERA_SPEED, 0.0f)); }},
-		{SDLK_d, [&]() { _camera.setPosition(_camera.getPosition() + glm::vec2(CAMERA_SPEED, 0.0f)); }},
-		{SDLK_q, [&]() { _camera.setScale(_camera.getScale() + SCALE_SPEED); }},
-		{SDLK_e, [&]() { _camera.setScale(_camera.getScale() - SCALE_SPEED); }},
-	};
+		//logically easier to follow, a pair of key and its function
+		std::unordered_map<SDL_Keycode, std::function<void()>> keyActions = {
+			{SDLK_w, [&]() { _camera.setPosition(_camera.getPosition() + glm::vec2(0.0f, CAMERA_SPEED)); }},
+			{SDLK_s, [&]() { _camera.setPosition(_camera.getPosition() + glm::vec2(0.0f, -CAMERA_SPEED)); }},
+			{SDLK_a, [&]() { _camera.setPosition(_camera.getPosition() + glm::vec2(-CAMERA_SPEED, 0.0f)); }},
+			{SDLK_d, [&]() { _camera.setPosition(_camera.getPosition() + glm::vec2(CAMERA_SPEED, 0.0f)); }},
+			{SDLK_q, [&]() { _camera.setScale(_camera.getScale() + SCALE_SPEED); }},
+			{SDLK_e, [&]() { _camera.setScale(_camera.getScale() - SCALE_SPEED); }},
+		};
 
-	//iterate the hash map until the end, if key match, run its value function
-	for (auto it = keyActions.begin(); it != keyActions.end(); ++it) {
-		if (_inputManager.isKeyPressed(it->first)) {
-			it->second(); 
+		//iterate the hash map until the end, if key match, run its value function
+		for (auto it = keyActions.begin(); it != keyActions.end(); ++it) {
+			if (_inputManager.isKeyPressed(it->first)) {
+				it->second();
+			}
 		}
-	}
 
+		//test mouse input coords
+		if (_inputManager.isKeyPressed(SDL_BUTTON_LEFT)) {
+			glm::vec2 mouseCoords = _inputManager.getMouseCoords();
+			mouseCoords = _camera.convertScreenCoordsToWorldCoords(mouseCoords);
+			std::cout << mouseCoords.x << " " << mouseCoords.y << std::endl;
+		}
+
+	}
 }
 
 void MainGame::drawGame() {
@@ -131,10 +146,6 @@ void MainGame::drawGame() {
 	//for uniform, bind texture 0
 	GLint textureLocation = _colorProgram.getUniformLocaiton("mySampler");
 	glUniform1i(textureLocation, 0);
-
-	//will fetch the location of our uniform variable time
-	GLuint timeLocation = _colorProgram.getUniformLocaiton("time");
-	glUniform1f(timeLocation, _time); //send the uniform to GPU, do before drawing
 
 	//Set the camera matrix
 	GLuint pLocation = _colorProgram.getUniformLocaiton("P");
